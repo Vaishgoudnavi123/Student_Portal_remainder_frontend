@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function Dashboard() {
   const [notifications, setNotifications] = useState([]);
+  const [newData, setNewData] = useState({
+    title: "",
+    message: "",
+    deadline: ""
+  });
+
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
@@ -14,75 +21,71 @@ function Dashboard() {
     setNotifications(res.data);
   };
 
-  const logout = () => {
+  const addNotification = async () => {
+    await API.post("/notifications", newData);
+    fetchNotifications();
+  };
+
+  const markAsDone = async (id) => {
+    await API.put(`/notifications/${id}/complete`);
+    fetchNotifications();
+  };
+
+  const handleLogout = () => {
     localStorage.removeItem("user");
     window.location.href = "/login";
   };
 
-  const addNotification = async (title, message) => {
-    await API.post("/notifications", {
-      title,
-      message,
-      recipients: "ALL"
-    });
-    fetchNotifications();
-  };
-
-  const deleteNotification = async (id) => {
-    await API.delete(`/notifications/${id}`);
-    fetchNotifications();
-  };
-
-  const markDone = async (id) => {
-    await API.put(`/notifications/complete/${id}/${user.id}`);
-    fetchNotifications();
-  };
-
   return (
-    <div className="container mt-4">
+    <div className="container py-4">
 
       <div className="d-flex justify-content-between">
         <h2>Dashboard</h2>
-        <button className="btn btn-danger" onClick={logout}>Logout</button>
+
+        <div>
+          <span className="badge bg-primary me-2">{user?.role}</span>
+          <button className="btn btn-danger btn-sm" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
       </div>
 
-      {user.role === "ADMIN" && (
-        <button
-          className="btn btn-primary my-3"
-          onClick={() => addNotification("Test", "New Task")}
-        >
-          Add Notification
-        </button>
+      <p>Welcome, {user?.name}</p>
+
+      {user?.role === "ADMIN" && (
+        <div className="card p-3 mb-3">
+          <input placeholder="Title" className="form-control mb-2"
+            onChange={(e) => setNewData({ ...newData, title: e.target.value })} />
+
+          <textarea placeholder="Message" className="form-control mb-2"
+            onChange={(e) => setNewData({ ...newData, message: e.target.value })} />
+
+          <input type="datetime-local" className="form-control mb-2"
+            onChange={(e) => setNewData({ ...newData, deadline: e.target.value })} />
+
+          <button className="btn btn-primary" onClick={addNotification}>
+            Add Notification
+          </button>
+        </div>
       )}
 
-      {notifications.map(n => {
-        const done = n.completedUsers?.includes(user.id);
+      {notifications.map((n) => (
+        <div key={n.id} className="card p-3 mb-2">
+          <h5>{n.title}</h5>
+          <p>{n.message}</p>
 
-        return (
-          <div key={n.id} className="card p-3 mb-2">
-            <h5>{n.title}</h5>
-            <p>{n.message}</p>
+          <span className={`badge ${n.completed ? "bg-success" : "bg-warning"}`}>
+            {n.completed ? "Done" : "Pending"}
+          </span>
 
-            {user.role === "STUDENT" && (
-              <button
-                className="btn btn-success"
-                onClick={() => markDone(n.id)}
-              >
-                {done ? "✔ Done" : "Mark Done"}
-              </button>
-            )}
-
-            {user.role === "ADMIN" && (
-              <button
-                className="btn btn-danger"
-                onClick={() => deleteNotification(n.id)}
-              >
-                Delete
-              </button>
-            )}
-          </div>
-        );
-      })}
+          {!n.completed && (
+            <button className="btn btn-success btn-sm mt-2"
+              onClick={() => markAsDone(n.id)}>
+              Mark as Done
+            </button>
+          )}
+        </div>
+      ))}
 
     </div>
   );
