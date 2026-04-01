@@ -17,6 +17,7 @@ function Login() {
 
     try {
       const res = await API.post("/login", data);
+
       localStorage.setItem("user", JSON.stringify(res.data));
       window.location.href = "/dashboard";
     } catch {
@@ -25,25 +26,17 @@ function Login() {
   };
 
   return (
-    <div
-      className="container d-flex justify-content-center align-items-center vh-100"
-      style={{ backgroundColor: "#e8f0f7" }} // Soft pastel background
-    >
-      <div
-        className="card shadow-lg border-0 p-4"
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          backgroundColor: "#fdfdfd", // Light gray card
-          color: "#2c3e50"
-        }}
-      >
-        <h3 className="text-center mb-3 fw-bold" style={{ color: "#3b5998" }}>
+    <div className="container d-flex justify-content-center align-items-center vh-100">
+      <div className="card shadow-lg border-0 p-4" style={{ width: "100%", maxWidth: "400px" }}>
+        
+        <h3 className="text-center mb-3 fw-bold text-primary">
           🔐 Login
         </h3>
 
         {error && (
-          <div className="alert alert-danger py-2 text-center">{error}</div>
+          <div className="alert alert-danger py-2 text-center">
+            {error}
+          </div>
         )}
 
         <div className="mb-3">
@@ -66,20 +59,14 @@ function Login() {
           />
         </div>
 
-        <button
-          className="btn w-100 mb-3"
-          style={{ backgroundColor: "#5dade2", color: "white" }} // Pleasant blue
-          onClick={handleLogin}
-        >
+        <button className="btn btn-primary w-100 mb-3" onClick={handleLogin}>
           Login
         </button>
 
         <p className="text-center">
-          Don’t have an account?{" "}
-          <Link to="/register" style={{ color: "#27ae60" }}>
-            Register
-          </Link>
+          Don’t have an account? <Link to="/register">Register</Link>
         </p>
+
       </div>
     </div>
   );
