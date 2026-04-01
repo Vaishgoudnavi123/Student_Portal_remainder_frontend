@@ -17,13 +17,32 @@ function Dashboard() {
   }, []);
 
   const fetchNotifications = async () => {
-    const res = await API.get("/notifications");
-    setNotifications(res.data);
+    try {
+      const res = await API.get("/notifications");
+      setNotifications(res.data);
+    } catch (err) {
+      console.error("Error fetching notifications", err);
+    }
   };
 
   const addNotification = async () => {
-    await API.post("/notifications", newData);
-    fetchNotifications();
+    try {
+      // We pass the role in the URL so the backend can verify it
+      await API.post(`/notifications?role=${user?.role}`, newData);
+      setNewData({ title: "", message: "", deadline: "" });
+      fetchNotifications();
+    } catch (err) {
+      alert("Action failed: Access Denied or Server Error");
+    }
+  };
+
+  const deleteNotification = async (id) => {
+    try {
+      await API.delete(`/notifications/${id}?role=${user?.role}`);
+      fetchNotifications();
+    } catch (err) {
+      alert("Only admins can delete notifications");
+    }
   };
 
   const markAsDone = async (id) => {
@@ -38,55 +57,75 @@ function Dashboard() {
 
   return (
     <div className="container py-4">
-
-      <div className="d-flex justify-content-between">
+      <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Dashboard</h2>
-
         <div>
           <span className="badge bg-primary me-2">{user?.role}</span>
-          <button className="btn btn-danger btn-sm" onClick={handleLogout}>
-            Logout
-          </button>
+          <button className="btn btn-danger btn-sm" onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
-      <p>Welcome, {user?.name}</p>
+      <p>Welcome, <strong>{user?.name}</strong></p>
 
+      {/* ADMIN ONLY UI */}
       {user?.role === "ADMIN" && (
-        <div className="card p-3 mb-3">
-          <input placeholder="Title" className="form-control mb-2"
-            onChange={(e) => setNewData({ ...newData, title: e.target.value })} />
-
-          <textarea placeholder="Message" className="form-control mb-2"
-            onChange={(e) => setNewData({ ...newData, message: e.target.value })} />
-
-          <input type="datetime-local" className="form-control mb-2"
-            onChange={(e) => setNewData({ ...newData, deadline: e.target.value })} />
-
+        <div className="card p-3 mb-4 shadow-sm">
+          <h4>Create New Notification</h4>
+          <input 
+            placeholder="Title" 
+            className="form-control mb-2"
+            value={newData.title}
+            onChange={(e) => setNewData({ ...newData, title: e.target.value })} 
+          />
+          <textarea 
+            placeholder="Message" 
+            className="form-control mb-2"
+            value={newData.message}
+            onChange={(e) => setNewData({ ...newData, message: e.target.value })} 
+          />
+          <input 
+            type="datetime-local" 
+            className="form-control mb-2"
+            value={newData.deadline}
+            onChange={(e) => setNewData({ ...newData, deadline: e.target.value })} 
+          />
           <button className="btn btn-primary" onClick={addNotification}>
             Add Notification
           </button>
         </div>
       )}
 
-      {notifications.map((n) => (
-        <div key={n.id} className="card p-3 mb-2">
-          <h5>{n.title}</h5>
-          <p>{n.message}</p>
-
-          <span className={`badge ${n.completed ? "bg-success" : "bg-warning"}`}>
-            {n.completed ? "Done" : "Pending"}
-          </span>
-
-          {!n.completed && (
-            <button className="btn btn-success btn-sm mt-2"
-              onClick={() => markAsDone(n.id)}>
-              Mark as Done
-            </button>
-          )}
-        </div>
-      ))}
-
+      {/* NOTIFICATION LIST */}
+      <div className="row">
+        {notifications.map((n) => (
+          <div key={n.id} className="col-md-6 mb-3">
+            <div className="card h-100 p-3">
+              <div className="d-flex justify-content-between">
+                <h5>{n.title}</h5>
+                {user?.role === "ADMIN" && (
+                  <button 
+                    className="btn btn-outline-danger btn-sm" 
+                    onClick={() => deleteNotification(n.id)}
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
+              <p>{n.message}</p>
+              <div className="mt-auto">
+                <span className={`badge ${n.completed ? "bg-success" : "bg-warning text-dark"}`}>
+                  {n.completed ? "Done" : "Pending"}
+                </span>
+                {!n.completed && (
+                  <button className="btn btn-success btn-sm ms-2" onClick={() => markAsDone(n.id)}>
+                    Mark as Done
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
