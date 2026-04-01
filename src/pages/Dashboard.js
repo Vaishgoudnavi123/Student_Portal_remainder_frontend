@@ -27,7 +27,6 @@ function Dashboard() {
 
   const addNotification = async () => {
     try {
-      // We pass the role in the URL so the backend can verify it
       await API.post(`/notifications?role=${user?.role}`, newData);
       setNewData({ title: "", message: "", deadline: "" });
       fetchNotifications();
@@ -56,40 +55,67 @@ function Dashboard() {
   };
 
   return (
-    <div className="container py-4">
+    <div className="container py-4" style={{ backgroundColor: "#e8f0f7" }}>
+      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Dashboard</h2>
+        <h2 style={{ color: "#3b5998" }}>Dashboard</h2>
         <div>
-          <span className="badge bg-primary me-2">{user?.role}</span>
-          <button className="btn btn-danger btn-sm" onClick={handleLogout}>Logout</button>
+          <span
+            className="badge me-2"
+            style={{ backgroundColor: "#5dade2", color: "white" }}
+          >
+            {user?.role}
+          </span>
+          <button
+            className="btn btn-sm"
+            style={{ backgroundColor: "#e74c3c", color: "white" }}
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
         </div>
       </div>
 
-      <p>Welcome, <strong>{user?.name}</strong></p>
+      <p>
+        Welcome, <strong style={{ color: "#27ae60" }}>{user?.name}</strong>
+      </p>
 
       {/* ADMIN ONLY UI */}
       {user?.role === "ADMIN" && (
-        <div className="card p-3 mb-4 shadow-sm">
-          <h4>Create New Notification</h4>
-          <input 
-            placeholder="Title" 
+        <div
+          className="card p-3 mb-4 shadow-sm"
+          style={{ backgroundColor: "#fdfdfd", borderLeft: "5px solid #5dade2" }}
+        >
+          <h4 style={{ color: "#2c3e50" }}>Create New Notification</h4>
+          <input
+            placeholder="Title"
             className="form-control mb-2"
             value={newData.title}
-            onChange={(e) => setNewData({ ...newData, title: e.target.value })} 
+            onChange={(e) =>
+              setNewData({ ...newData, title: e.target.value })
+            }
           />
-          <textarea 
-            placeholder="Message" 
+          <textarea
+            placeholder="Message"
             className="form-control mb-2"
             value={newData.message}
-            onChange={(e) => setNewData({ ...newData, message: e.target.value })} 
+            onChange={(e) =>
+              setNewData({ ...newData, message: e.target.value })
+            }
           />
-          <input 
-            type="datetime-local" 
+          <input
+            type="datetime-local"
             className="form-control mb-2"
             value={newData.deadline}
-            onChange={(e) => setNewData({ ...newData, deadline: e.target.value })} 
+            onChange={(e) =>
+              setNewData({ ...newData, deadline: e.target.value })
+            }
           />
-          <button className="btn btn-primary" onClick={addNotification}>
+          <button
+            className="btn"
+            style={{ backgroundColor: "#5dade2", color: "white" }}
+            onClick={addNotification}
+          >
             Add Notification
           </button>
         </div>
@@ -99,25 +125,36 @@ function Dashboard() {
       <div className="row">
         {notifications.map((n) => (
           <div key={n.id} className="col-md-6 mb-3">
-            <div className="card h-100 p-3">
+            <div
+              className="card h-100 p-3"
+              style={{ backgroundColor: "#f0f9f4" }}
+            >
               <div className="d-flex justify-content-between">
-                <h5>{n.title}</h5>
+                <h5 style={{ color: "#2c3e50" }}>{n.title}</h5>
                 {user?.role === "ADMIN" && (
-                  <button 
-                    className="btn btn-outline-danger btn-sm" 
+                  <button
+                    className="btn btn-outline-danger btn-sm"
                     onClick={() => deleteNotification(n.id)}
                   >
                     &times;
                   </button>
                 )}
               </div>
-              <p>{n.message}</p>
+              <p style={{ color: "#34495e" }}>{n.message}</p>
               <div className="mt-auto">
-                <span className={`badge ${n.completed ? "bg-success" : "bg-warning text-dark"}`}>
+                <span
+                  className={`badge ${
+                    n.completed ? "bg-success" : "bg-warning text-dark"
+                  }`}
+                >
                   {n.completed ? "Done" : "Pending"}
                 </span>
                 {!n.completed && (
-                  <button className="btn btn-success btn-sm ms-2" onClick={() => markAsDone(n.id)}>
+                  <button
+                    className="btn btn-sm ms-2"
+                    style={{ backgroundColor: "#27ae60", color: "white" }}
+                    onClick={() => markAsDone(n.id)}
+                  >
                     Mark as Done
                   </button>
                 )}
